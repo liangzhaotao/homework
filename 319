@@ -1,0 +1,51 @@
+import java.util.*;
+
+class Book {
+    int id; String title; String genre;
+    public Book(int id, String title, String genre) {
+        this.id = id; this.title = title; this.genre = genre;
+    }
+    @Override
+    public String toString() { return title + " (" + genre + ")"; }
+}
+
+class LibrarySystem {
+    List<Book> list = new ArrayList<>(); 
+    Set<String> genres = new HashSet<>(); 
+    Map<Integer, Book> map = new HashMap<>();  
+
+    void addBook(Book b) {
+        list.add(b);
+        genres.add(b.genre);
+        map.put(b.id, b);
+    }
+
+    void removeByKeyword(String keyword) {
+        Iterator<Book> it = list.iterator();
+        while (it.hasNext()) {
+            Book b = it.next();
+            if (b.title.contains(keyword)) {
+                it.remove();
+                map.remove(b.id);
+            }
+        }
+    }
+
+    void show() {
+        System.out.println("图书: " + list);
+        System.out.println("类别: " + genres);
+        System.out.println("查ID 101: " + map.get(101));
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        LibrarySystem lib = new LibrarySystem();
+        lib.addBook(new Book(101, "Java编程", "技术"));
+        lib.addBook(new Book(102, "百年孤独", "小说"));
+        lib.addBook(new Book(103, "Java实战", "技术"));
+        lib.show();
+        lib.removeByKeyword("Java"); 
+        lib.show();
+    }
+}
