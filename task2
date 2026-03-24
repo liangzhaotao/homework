@@ -1,0 +1,31 @@
+import java.util.regex.*;
+
+public class PhoneNumberProcessor {
+
+    private static final Pattern PATTERN = Pattern.compile("^(\\+7|8|7)(\\d{10})$");
+
+    public static void main(String[] args) {
+        String[] tests = { "8 (912) 345-67-89", "+7 123 456 78 90", "12345" };
+        for (String input : tests) {
+            try {
+                System.out.println(input + " -> " + formatPhone(input));
+            } catch (Exception e) {
+                System.out.println(input + " -> Error: " + e.getMessage());
+            }
+        }
+    }
+
+    public static String formatPhone(String raw) {
+        String clean = raw.replaceAll("[^\\d+]", "");
+
+        Matcher m = PATTERN.matcher(clean);
+        if (!m.matches()) throw new IllegalArgumentException("Invalid format");
+
+        return String.format("+7 %s %s-%s-%s",
+                m.group(2).substring(0, 3),
+                m.group(2).substring(3, 6),
+                m.group(2).substring(6, 8),
+                m.group(2).substring(8)
+        );
+    }
+}
