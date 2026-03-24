@@ -1,0 +1,61 @@
+import java.io.*;
+import java.nio.file.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+class InvalidDiscountException extends Exception {
+    public InvalidDiscountException(String msg) { super(msg); }
+}
+
+record Product(String name, double price, int quantity) {
+    private final double originalPrice = price;
+
+    void applyDiscount(double percent) throws InvalidDiscountException {
+        if (percent < 0 || percent > 50) throw new InvalidDiscountException("Discount must be between 0 and 50 percent");
+    }
+}
+
+class ProductCompact {
+    String name; double price, originalPrice; int quantity;
+    public ProductCompact(String n, double p, int q) { name = n; price = p; originalPrice = p; quantity = q; }
+    public void applyDiscount(double p) throws InvalidDiscountException {
+        if (p < 0 || p > 50) throw new InvalidDiscountException("Discount must be between 0 and 50 percent");
+        price *= (1 - p / 100);
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        List<ProductCompact> products = new ArrayList<>();
+        int errors = 0;
+        
+        try (BufferedReader br = Files.newBufferedReader(Paths.get("products.txt"))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] p = line.split(";");
+                products.add(new ProductCompact(p[0], Double.parseDouble(p[1]), Integer.parseInt(p[2])));
+            }
+        } catch (Exception e) { System.err.println("读取文件失败: " + e.getMessage()); return; }
+        
+        try (FileWriter fw = new FileWriter("errors.log")) {
+            for (ProductCompact prod : products) {
+                try {
+                    prod.applyDiscount(30); 
+                } catch (InvalidDiscountException e) {
+                    fw.write(String.format("[%s] 错误: %s - %s%n", LocalDateTime.now(), prod.name, e.getMessage()));
+                    errors++;
+                }
+            }
+        } catch (IOException e) { System.err.println("写入日志失败"); }
+        
+        System.out.println("折扣后商品列表:");
+        for (ProductCompact p : products) {
+            String status = (p.price != p.originalPrice)
+                    ? String.format("$%.2f -> $%.2f", p.originalPrice, p.price)
+                    : "(未应用折扣)";
+            System.out.printf("%s: %s%n", p.name, status);
+        }
+        System.out.printf("处理完成: %d 个商品, 错误: %d%n", products.size(), errors);
+    }
+}
