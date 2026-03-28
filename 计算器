@@ -1,0 +1,106 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+public class Calculator extends JFrame implements ActionListener {
+
+    private final JTextField display;
+    private String currentInput = "";
+    private final String[] row1 = {"%", "CE", "C", "⌫"};
+    private final String[] row2 = {"1/x", "x²", "²√x", "÷"};
+    private final String[] row3 = {"7", "8", "9", "×"};
+    private final String[] row4 = {"4", "5", "6", "-"};
+    private final String[] row5 = {"1", "2", "3", "+"};
+    private final String[] row6 = {"+/-", "0", "."}; 
+
+    public Calculator() {
+        setTitle("Calculator");
+        setSize(320, 500);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setLayout(new BorderLayout(5, 5));
+        getContentPane().setBackground(new Color(243, 243, 243));
+
+        display = new JTextField("0");
+        display.setFont(new Font("Segoe UI", Font.PLAIN, 32));
+        display.setHorizontalAlignment(JTextField.RIGHT);
+        display.setEditable(false);
+        display.setBackground(Color.WHITE);
+        display.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        add(display, BorderLayout.NORTH);
+
+        JPanel buttonPanel = new JPanel(new GridLayout(6, 4, 2, 2));
+        buttonPanel.setBackground(new Color(243, 243, 243));
+
+        for (String text : row1) addButton(buttonPanel, text, new Color(230, 230, 230), Color.BLACK);
+        for (String text : row2) addButton(buttonPanel, text, new Color(230, 230, 230), Color.BLACK);
+        for (String text : row3) addButton(buttonPanel, text, Color.WHITE, Color.BLACK);
+        for (String text : row4) addButton(buttonPanel, text, Color.WHITE, Color.BLACK);
+        for (String text : row5) addButton(buttonPanel, text, Color.WHITE, Color.BLACK);
+
+        addButton(buttonPanel, "+/-", Color.WHITE, Color.BLACK);
+        addButton(buttonPanel, "0", Color.WHITE, Color.BLACK);
+        addButton(buttonPanel, ".", Color.WHITE, Color.BLACK);
+        JButton equalBtn = createButton("=");
+        equalBtn.setBackground(new Color(0, 120, 215));
+        equalBtn.setOpaque(true);
+        equalBtn.setForeground(Color.WHITE);
+        equalBtn.addActionListener(this);
+        buttonPanel.add(equalBtn);
+
+        add(buttonPanel, BorderLayout.CENTER);
+    }
+
+    private JButton createButton(String text) {
+        JButton btn = new JButton(text);
+        btn.setFont(new Font("Segoe UI", Font.PLAIN, 18));
+        btn.setFocusPainted(false);
+        btn.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        return btn;
+    }
+
+    private void addButton(JPanel panel, String text, Color bgColor, Color fgColor) {
+        JButton btn = createButton(text);
+        btn.setBackground(bgColor);
+        btn.setForeground(fgColor);
+        btn.setOpaque(true);
+        btn.addActionListener(this);
+        panel.add(btn);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        String command = e.getActionCommand();
+
+        if (command.charAt(0) >= '0' && command.charAt(0) <= '9' || command.equals(".")) {
+            currentInput += command;
+            display.setText(currentInput);
+        } else if (command.equals("C") || command.equals("CE")) {
+            currentInput = "";
+            display.setText("0");
+        } else if (command.equals("⌫")) {
+            if (currentInput.length() > 0) {
+                currentInput = currentInput.substring(0, currentInput.length() - 1);
+                display.setText(currentInput.isEmpty() ? "0" : currentInput);
+            }
+        } else if (command.equals("=")) {
+            try {
+                String toEval = currentInput.replace('×', '*').replace('÷', '/');
+                display.setText("结果: " + toEval);
+            } catch (Exception ex) {
+                display.setText("Error");
+            }
+        } else {
+            currentInput += " " + command + " ";
+            display.setText(currentInput);
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            Calculator calc = new Calculator();
+            calc.setVisible(true);
+        });
+    }
+}
